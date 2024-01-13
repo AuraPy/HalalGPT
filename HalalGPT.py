@@ -1,6 +1,3 @@
-# HalalGPT version unknown (soon to be 2.0.0), first working version date unknown, last modification 13/1/2024
-# Currently Unlicensed. Will be open source under the MIT License.
-
 from openai import OpenAI # For GPT-3.5 Turbo access
 from pathlib import Path # To get the path of the "speech.mp3" file in the right format
 from pygame import mixer # Module of library (pygame) to play sound
@@ -10,10 +7,14 @@ from mutagen.mp3 import MP3 # To get the length of "speech.mp3"
 from datetime import datetime # To get the current date and time
 import requests # To call APIs
 import json # To parse the JSON output APIs give
+from dotenv import load_dotenv # To load the openai token from .env
+
+load_dotenv() # load the .env file
+OPENAI_TOKEN = os.getenv("OPENAI_TOKEN") # get the token from the .env file
 
 mixer.init() # Initialize the mixer
 responselist = list() # Create the responselist variable
-client = OpenAI(api_key="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") # Set the openai client and set the token
+client = OpenAI(api_key=OPENAI_TOKEN) # Set the openai client and set the token
 
 # array of voices for HalalGPT
 voices = {
