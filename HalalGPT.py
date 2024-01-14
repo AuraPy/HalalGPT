@@ -16,7 +16,14 @@ import sys
 class window(QWidget):
     def __init__(self, parent = None):
         super(window, self).__init__(parent)
-        self.resize(300, 700)
+        self.resize(500, 900)
+        self.layout = QVBoxLayout()
+        self.HLayout = QHBoxLayout()
+        self.layout.addStretch()
+        self.layout.addLayout(self.HLayout)
+        self.msgbox = QTextEdit()
+        self.HLayout.addWidget(self.msgbox)
+        self.msgbox.setMaximumSize(500, 50)
 
         load_dotenv() # load the .env file
         self.OPENAI_TOKEN = os.getenv("self.OPENAI_TOKEN") # get the token from the .env file
@@ -64,6 +71,7 @@ class window(QWidget):
             }
         ]
 
+        self.setLayout(self.layout)
         self.show()
         # Call genersel
         self.gendersel()
