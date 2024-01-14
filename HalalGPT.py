@@ -24,6 +24,8 @@ class window(QWidget):
         self.msgbox = QTextEdit()
         self.HLayout.addWidget(self.msgbox)
         self.msgbox.setMaximumSize(500, 50)
+        self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
+        self.setStyleSheet("background-color: #27273d;")
 
         load_dotenv() # load the .env file
         self.OPENAI_TOKEN = os.getenv("self.OPENAI_TOKEN") # get the token from the .env file
