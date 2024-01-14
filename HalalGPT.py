@@ -18,11 +18,12 @@ class window(QWidget):
     def __init__(self, parent = None):
         super(window, self).__init__(parent)
         self.resize(500, 900)
+        self.output = QTextBrowser()
         self.layout = QVBoxLayout()
         self.HLayout = QHBoxLayout()
-        self.layout.addStretch()
+        self.layout.addWidget(self.output)
         self.layout.addLayout(self.HLayout)
-        self.msgbox = QTextEdit()
+        self.msgbox = QTextEdit("Message HalalGPT...")
         self.send = QPushButton()
         self.HLayout.addWidget(self.msgbox)
         self.HLayout.addWidget(self.send)
@@ -31,6 +32,8 @@ class window(QWidget):
         self.send.setMinimumSize(50, 50)
         self.send.setIcon(QIcon(r'HalalGPT\send.png'))
         self.send.setIconSize(QSize(40, 40))
+        self.output.setFrameShape(QFrame.NoFrame)
+        self.output.setStyleSheet("background: transparent; color: white; font-size: 15px")
         self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
         self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.setStyleSheet("background-color: #27273d;")
@@ -82,6 +85,9 @@ class window(QWidget):
             }
         ]
 
+        self.font = QFont("Century Gothic")
+        self.font.setBold(True)
+        self.setFont(self.font)
         self.setLayout(self.layout)
         self.show()
         # Call genersel
@@ -108,6 +114,7 @@ class window(QWidget):
             self.gendersel()
 
     def GPT(self):
+        self.output.setText("Thinking...")
         userinput = self.msgbox.toPlainText() # Get the user's input
         self.responselist.append("User: " + userinput + "\n") # Add the user's question, response or statement to self.responselist
         completion = self.client.chat.completions.create( # create the GPT-3.5 Turbo session
@@ -147,12 +154,15 @@ class window(QWidget):
             
         print(str(completion.choices[0].message.content)) # print HalalGPT's reply
         self.responselist.append("You: " + str(completion.choices[0].message.content) + "\n") # Add HalalGPT's reply to self.responselist
+        threading.Thread(target=self.say, args=(str(completion.choices[0].message.content), self.voices[voice])).start()
+        self.output.setText(str(completion.choices[0].message.content))
 
+    def say(self, text, voice):
         speech_file_path = Path(__file__).parent / "speech.mp3" # Get the path of "speech.mp3" in the right format
         response = self.client.audio.speech.create( # Create a new TTS session
         model="tts-1", # Pass the model number
-        voice=self.voices[voice], # Pass the selected voice
-        input=str(completion.choices[0].message.content) # Pass HalalGPT's reply
+        voice=voice, # Pass the selected voice
+        input=str(text) # Pass HalalGPT's reply
         )
 
         response.stream_to_file(speech_file_path) # Stream the audio to "speech.mp3"
