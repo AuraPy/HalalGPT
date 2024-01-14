@@ -12,6 +12,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
+import threading
 
 class window(QWidget):
     def __init__(self, parent = None):
@@ -22,17 +23,25 @@ class window(QWidget):
         self.layout.addStretch()
         self.layout.addLayout(self.HLayout)
         self.msgbox = QTextEdit()
+        self.send = QPushButton()
         self.HLayout.addWidget(self.msgbox)
+        self.HLayout.addWidget(self.send)
         self.msgbox.setMaximumSize(500, 50)
+        self.send.setMaximumSize(50, 50)
+        self.send.setMinimumSize(50, 50)
+        self.send.setIcon(QIcon(r'HalalGPT\send.png'))
+        self.send.setIconSize(QSize(40, 40))
         self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
+        self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.setStyleSheet("background-color: #27273d;")
+        self.send.clicked.connect(self.GPT)
 
         load_dotenv() # load the .env file
-        self.OPENAI_TOKEN = os.getenv("self.OPENAI_TOKEN") # get the token from the .env file
+        OPENAI_TOKEN = os.getenv("OPENAI_TOKEN") # get the token from the .env file
 
         mixer.init() # Initialize the mixer
         self.responselist = list() # Create the self.responselist variable
-        self.client = OpenAI(api_key=self.OPENAI_TOKEN) # Set the openai client and set the token
+        self.client = OpenAI(api_key=OPENAI_TOKEN) # Set the openai client and set the token
 
         # array of voices for HalalGPT
         self.voices = {
@@ -90,14 +99,16 @@ class window(QWidget):
         usrselvoice = input("What gender voice?\n\n")
         if usrselvoice.lower() == "male":
             voice = "male"
+            self.GPT()
         elif usrselvoice.lower() == "female":
             voice = "female"
+            self.GPT()
         else:
             print(f"Options are Male and Female, not {usrselvoice}")
             self.gendersel()
 
     def GPT(self):
-        userinput = input() # Get the user's input
+        userinput = self.msgbox.toPlainText() # Get the user's input
         self.responselist.append("User: " + userinput + "\n") # Add the user's question, response or statement to self.responselist
         completion = self.client.chat.completions.create( # create the GPT-3.5 Turbo session
             model="gpt-3.5-turbo", # Pass the model ID
