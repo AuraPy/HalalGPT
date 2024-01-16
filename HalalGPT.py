@@ -13,10 +13,16 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
 import threading
+import ctypes
+
+myappid = 'aurapy.halalgpt.halalgpt' # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 class window(QWidget):
     def __init__(self, parent = None):
         super(window, self).__init__(parent)
+        settings = QSettings("AuraPy", "HalalGPT")
+        self.setWindowIcon(QIcon(r"C:\Users\HP\OneDrive\Python_Projects\HalalGPT\logo.svg"))
         self.resize(500, 900)
         self.output = QTextBrowser()
         self.settings = QPushButton()
@@ -45,6 +51,7 @@ class window(QWidget):
         self.settings.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.setStyleSheet("background-color: #27273d;")
         self.send.clicked.connect(self.GPT)
+        self.settings.clicked.connect(self.settingsfunc)
 
         load_dotenv() # load the .env file
         OPENAI_TOKEN = os.getenv("OPENAI_TOKEN") # get the token from the .env file
@@ -105,6 +112,10 @@ class window(QWidget):
     def namaz(self, country, city, method, namaz):
         data = requests.get(f"https://api.aladhan.com/v1/timingsByCity?city={city.lower()}&country={country}&method={method}").json()
         return data["data"]["timings"][namaz]
+    
+    def settingsfunc(self):
+        self.dialog = settings()
+        self.dialog.show()
 
     # Select the gender of HalalGPT's voice
     def gendersel(self):
@@ -180,6 +191,43 @@ class window(QWidget):
         mixer.music.load(r"HalalGPT\empty.mp3") # load a small beep sound into pygame mixer
         mixer.music.play() # play the beep sound to avoid an "access denied" error
         os.remove(r'HalalGPT\speech.mp3') # Remove "speech.mp3" to avoid an "access denied" error
+
+class settings(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Settings")
+        self.setStyleSheet("background-color: #27273d;")
+
+        self.save = QPushButton("Save")
+        self.cancel = QPushButton("Cancel")
+        self.themelight = QPushButton("Light Mode")
+        self.themedark = QPushButton("Dark Mode")
+
+        self.save.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+        self.cancel.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+        self.themelight.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+        self.themedark.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+
+        self.save.setMaximumSize(50, 30)
+        self.save.setMinimumSize(50, 30)
+        self.cancel.setMaximumSize(50, 30)
+        self.cancel.setMinimumSize(50, 30)
+        self.themelight.setMaximumSize(70, 50)
+        self.themelight.setMinimumSize(70, 50)
+        self.themedark.setMaximumSize(70, 50)
+        self.themedark.setMinimumSize(70, 50)
+
+        self.layout = QVBoxLayout()
+        self.confirmation = QHBoxLayout()
+        self.theme = QHBoxLayout()
+        self.confirmation.addWidget(self.save)
+        self.confirmation.addWidget(self.cancel)
+        self.theme.addWidget(self.themelight)
+        self.theme.addWidget(self.themedark)
+        self.layout.addLayout(self.theme)
+        self.layout.addLayout(self.confirmation)
+        self.setLayout(self.layout)
 
 def main():
     app = QApplication(sys.argv)
