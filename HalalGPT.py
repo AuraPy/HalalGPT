@@ -21,37 +21,33 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 class window(QWidget):
     def __init__(self, parent = None):
         super(window, self).__init__(parent)
-        settings = QSettings("AuraPy", "HalalGPT")
+        self.settings = QSettings("AuraPy", "HalalGPT")
         self.setWindowIcon(QIcon(r"C:\Users\HP\OneDrive\Python_Projects\HalalGPT\logo.svg"))
         self.resize(500, 900)
         self.output = QTextBrowser()
-        self.settings = QPushButton()
+        self.settingsbutton = QPushButton()
         self.layout = QVBoxLayout()
         self.HLayout = QHBoxLayout()
-        self.layout.addWidget(self.settings)
+        self.layout.addWidget(self.settingsbutton)
         self.layout.addWidget(self.output)
         self.layout.addLayout(self.HLayout)
         self.msgbox = QTextEdit("Message HalalGPT...")
         self.send = QPushButton()
         self.HLayout.addWidget(self.msgbox)
         self.HLayout.addWidget(self.send)
-        self.settings.setMaximumSize(50, 50)
-        self.settings.setMinimumSize(50, 50)
+        self.settingsbutton.setMaximumSize(50, 50)
+        self.settingsbutton.setMinimumSize(50, 50)
         self.msgbox.setMaximumSize(500, 50)
         self.send.setMaximumSize(50, 50)
         self.send.setMinimumSize(50, 50)
         self.send.setIcon(QIcon(r'HalalGPT\send.png'))
         self.send.setIconSize(QSize(40, 40))
-        self.settings.setIcon(QIcon(r'HalalGPT\settings.png'))
-        self.settings.setIconSize(QSize(40, 40))
+        self.settingsbutton.setIcon(QIcon(r'HalalGPT\settings.png'))
+        self.settingsbutton.setIconSize(QSize(40, 40))
         self.output.setFrameShape(QFrame.NoFrame)
-        self.output.setStyleSheet("background: transparent; color: white; font-size: 15px")
-        self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
-        self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
-        self.settings.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
-        self.setStyleSheet("background-color: #27273d;")
+        self.theme()
         self.send.clicked.connect(self.GPT)
-        self.settings.clicked.connect(self.settingsfunc)
+        self.settingsbutton.clicked.connect(self.settingsfunc)
 
         load_dotenv() # load the .env file
         OPENAI_TOKEN = os.getenv("OPENAI_TOKEN") # get the token from the .env file
@@ -116,6 +112,26 @@ class window(QWidget):
     def settingsfunc(self):
         self.dialog = settings()
         self.dialog.show()
+
+    def restart():
+        QApplication.closeAllWindows()
+        QCoreApplication.quit()
+        status = QProcess.startDetached(sys.executable, sys.argv)
+        print(status)
+
+    def theme(self):
+        if self.settings.value("Theme") == "Dark":
+            self.output.setStyleSheet("background: transparent; color: white; font-size: 15px")
+            self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
+            self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+            self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+            self.setStyleSheet("background-color: #27273d;")
+        elif self.settings.value("Theme") == "Light":
+            self.output.setStyleSheet("background: transparent; color: black; font-size: 15px")
+            self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: black; background-color: #1b1b29;")
+            self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
+            self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
+            self.setStyleSheet("background-color: white;")
 
     # Select the gender of HalalGPT's voice
     def gendersel(self):
@@ -197,12 +213,16 @@ class settings(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Settings")
+        self.settings = QSettings("AuraPy", "HalalGPT")
         self.setStyleSheet("background-color: #27273d;")
 
         self.save = QPushButton("Save")
         self.cancel = QPushButton("Cancel")
         self.themelight = QPushButton("Light Mode")
         self.themedark = QPushButton("Dark Mode")
+
+        self.themelight.clicked.connect(self.lightmode)
+        self.themedark.clicked.connect(self.darkmode)
 
         self.save.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.cancel.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
@@ -228,6 +248,15 @@ class settings(QDialog):
         self.layout.addLayout(self.theme)
         self.layout.addLayout(self.confirmation)
         self.setLayout(self.layout)
+
+    def lightmode(self):
+        self.settings.setValue("Theme", "Light")
+        print(self.settings.value("Theme"))
+        window.restart()
+    def darkmode(self):
+        self.settings.setValue("Theme", "Dark")
+        print(self.settings.value("Theme"))
+        window.restart()
 
 def main():
     app = QApplication(sys.argv)
