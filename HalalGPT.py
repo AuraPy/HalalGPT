@@ -22,7 +22,7 @@ class window(QWidget):
     def __init__(self, parent = None):
         super(window, self).__init__(parent)
         self.settings = QSettings("AuraPy", "HalalGPT")
-        self.setWindowIcon(QIcon(r"C:\Users\HP\OneDrive\Python_Projects\HalalGPT\logo.svg"))
+        self.setWindowIcon(QIcon(r"logo.svg"))
         self.resize(500, 900)
         self.output = QTextBrowser()
         self.settingsbutton = QPushButton()
@@ -40,9 +40,9 @@ class window(QWidget):
         self.msgbox.setMaximumSize(500, 50)
         self.send.setMaximumSize(50, 50)
         self.send.setMinimumSize(50, 50)
-        self.send.setIcon(QIcon(r'HalalGPT\send.png'))
+        self.send.setIcon(QIcon(r'send.png'))
         self.send.setIconSize(QSize(40, 40))
-        self.settingsbutton.setIcon(QIcon(r'HalalGPT\settings.png'))
+        self.settingsbutton.setIcon(QIcon(r'settings.png'))
         self.settingsbutton.setIconSize(QSize(40, 40))
         self.output.setFrameShape(QFrame.NoFrame)
         self.theme()
@@ -58,8 +58,8 @@ class window(QWidget):
 
         # array of voices for HalalGPT
         self.voices = {
-            "male": "onyx",
-            "female": "shimmer"
+            "Male": "onyx",
+            "Female": "shimmer"
         }
 
         # Functions that HalalGPT can call
@@ -100,8 +100,6 @@ class window(QWidget):
         self.setFont(self.font)
         self.setLayout(self.layout)
         self.show()
-        # Call genersel
-        self.gendersel()
 
 
     # Call the namaz timings API
@@ -132,20 +130,6 @@ class window(QWidget):
             self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
             self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
             self.setStyleSheet("background-color: white;")
-
-    # Select the gender of HalalGPT's voice
-    def gendersel(self):
-        global voice
-        usrselvoice = input("What gender voice?\n\n")
-        if usrselvoice.lower() == "male":
-            voice = "male"
-            self.GPT()
-        elif usrselvoice.lower() == "female":
-            voice = "female"
-            self.GPT()
-        else:
-            print(f"Options are Male and Female, not {usrselvoice}")
-            self.gendersel()
 
     def GPT(self):
         self.output.setText("Thinking...")
@@ -188,7 +172,7 @@ class window(QWidget):
             
         print(str(completion.choices[0].message.content)) # print HalalGPT's reply
         self.responselist.append("You: " + str(completion.choices[0].message.content) + "\n") # Add HalalGPT's reply to self.responselist
-        threading.Thread(target=self.say, args=(str(completion.choices[0].message.content), self.voices[voice])).start()
+        threading.Thread(target=self.say, args=(str(completion.choices[0].message.content), self.voices[self.settings.value("Voice")])).start()
         self.output.setText(str(completion.choices[0].message.content))
 
     def say(self, text, voice):
@@ -200,13 +184,13 @@ class window(QWidget):
         )
 
         response.stream_to_file(speech_file_path) # Stream the audio to "speech.mp3"
-        audio = MP3(r"HalalGPT\speech.mp3") # Pass the path of "speech.mp3" through mutagen
-        mixer.music.load(r'HalalGPT\speech.mp3') # Pass the path of "speech.mp3" through pygame mixer
+        audio = MP3(r"speech.mp3") # Pass the path of "speech.mp3" through mutagen
+        mixer.music.load(r'speech.mp3') # Pass the path of "speech.mp3" through pygame mixer
         mixer.music.play() # play "speech.mp3"
         time.sleep(audio.info.length) # sleep for however long "speech.mp3" is
-        mixer.music.load(r"HalalGPT\empty.mp3") # load a small beep sound into pygame mixer
+        mixer.music.load(r"empty.mp3") # load a small beep sound into pygame mixer
         mixer.music.play() # play the beep sound to avoid an "access denied" error
-        os.remove(r'HalalGPT\speech.mp3') # Remove "speech.mp3" to avoid an "access denied" error
+        os.remove(r'speech.mp3') # Remove "speech.mp3" to avoid an "access denied" error
 
 class settings(QDialog):
     def __init__(self, parent=None):
@@ -216,37 +200,46 @@ class settings(QDialog):
         self.settings = QSettings("AuraPy", "HalalGPT")
         self.setStyleSheet("background-color: #27273d;")
 
-        self.save = QPushButton("Save")
-        self.cancel = QPushButton("Cancel")
         self.themelight = QPushButton("Light Mode")
         self.themedark = QPushButton("Dark Mode")
+        self.voicemale = QPushButton("Male")
+        self.voicefemale = QPushButton("Female")
 
         self.themelight.clicked.connect(self.lightmode)
         self.themedark.clicked.connect(self.darkmode)
+        self.voicemale.clicked.connect(self.malevoice)
+        self.voicefemale.clicked.connect(self.femalevoice)
 
-        self.save.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
-        self.cancel.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.themelight.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.themedark.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+        self.voicemale.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+        self.voicefemale.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
 
-        self.save.setMaximumSize(50, 30)
-        self.save.setMinimumSize(50, 30)
-        self.cancel.setMaximumSize(50, 30)
-        self.cancel.setMinimumSize(50, 30)
+        self.setStyleSheet("color: white; background-color: #27273d")
+
         self.themelight.setMaximumSize(70, 50)
         self.themelight.setMinimumSize(70, 50)
         self.themedark.setMaximumSize(70, 50)
         self.themedark.setMinimumSize(70, 50)
+        self.voicemale.setMaximumSize(70, 50)
+        self.voicemale.setMinimumSize(70, 50)
+        self.voicefemale.setMaximumSize(70, 50)
+        self.voicefemale.setMinimumSize(70, 50)
+
+        self.titlethemes = QLabel("Themes")
+        self.titlevoices = QLabel("AI Voices")
 
         self.layout = QVBoxLayout()
-        self.confirmation = QHBoxLayout()
         self.theme = QHBoxLayout()
-        self.confirmation.addWidget(self.save)
-        self.confirmation.addWidget(self.cancel)
+        self.voices = QHBoxLayout()
         self.theme.addWidget(self.themelight)
         self.theme.addWidget(self.themedark)
+        self.voices.addWidget(self.voicemale)
+        self.voices.addWidget(self.voicefemale)
+        self.layout.addWidget(self.titlethemes)
         self.layout.addLayout(self.theme)
-        self.layout.addLayout(self.confirmation)
+        self.layout.addWidget(self.titlevoices)
+        self.layout.addLayout(self.voices)
         self.setLayout(self.layout)
 
     def lightmode(self):
@@ -257,6 +250,12 @@ class settings(QDialog):
         self.settings.setValue("Theme", "Dark")
         print(self.settings.value("Theme"))
         window.restart()
+    def malevoice(self):
+        self.settings.setValue("Voice", "Male")
+        self.hide()
+    def femalevoice(self):
+        self.settings.setValue("Voice", "Female")
+        self.hide()
 
 def main():
     app = QApplication(sys.argv)
