@@ -199,7 +199,7 @@ class window(QWidget):
         mixer.music.load(f"{os.getcwd()}/speech.mp3") # Pass the path of "speech.mp3" through pygame mixer
         mixer.music.play() # play "speech.mp3"
         time.sleep(audio.info.length) # sleep for however long "speech.mp3" is
-        mixer.music.load(f"{os.getcwd()}/speech.mp3") # load a small beep sound into pygame mixer
+        mixer.music.load(f"{os.getcwd()}/empty.mp3") # load a small beep sound into pygame mixer
         mixer.music.play() # play the beep sound to avoid an "access denied" error
         os.remove(f"{os.getcwd()}/speech.mp3") # Remove "speech.mp3" to avoid an "access denied" error
 
