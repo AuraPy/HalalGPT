@@ -22,7 +22,7 @@ class window(QWidget):
     def __init__(self, parent = None):
         super(window, self).__init__(parent)
         self.settings = QSettings("AuraPy", "HalalGPT")
-        self.setWindowIcon(QIcon(r"logo.svg"))
+        self.setWindowIcon(QIcon(f"{os.getcwd()}/logo.svg"))
         self.resize(500, 900)
         self.output = QTextBrowser()
         self.settingsbutton = QPushButton()
@@ -40,9 +40,9 @@ class window(QWidget):
         self.msgbox.setMaximumSize(500, 50)
         self.send.setMaximumSize(50, 50)
         self.send.setMinimumSize(50, 50)
-        self.send.setIcon(QIcon(r'send.png'))
+        self.send.setIcon(QIcon(f'{os.getcwd()}/send.png'))
         self.send.setIconSize(QSize(40, 40))
-        self.settingsbutton.setIcon(QIcon(r'settings.png'))
+        self.settingsbutton.setIcon(QIcon(f'{os.getcwd()}/settings.png'))
         self.settingsbutton.setIconSize(QSize(40, 40))
         self.output.setFrameShape(QFrame.NoFrame)
         self.theme()
@@ -54,7 +54,11 @@ class window(QWidget):
 
         mixer.init() # Initialize the mixer
         self.responselist = list() # Create the self.responselist variable
-        self.client = OpenAI(api_key=OPENAI_TOKEN) # Set the openai client and set the token
+        if self.settings.value("key"):
+            self.client = OpenAI(api_key=self.settings.value("key")) # Set the openai client and set the token
+        else:
+            print("Reverted back to environment variable for api key, will throw error if not provided.")
+            self.client = OpenAI(api_key=OPENAI_TOKEN)
 
         # array of voices for HalalGPT
         self.voices = {
@@ -118,18 +122,25 @@ class window(QWidget):
         print(status)
 
     def theme(self):
-        if self.settings.value("Theme") == "Dark":
+        try:
+            if self.settings.value("Theme") == "Dark":
+                self.output.setStyleSheet("background: transparent; color: white; font-size: 15px")
+                self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
+                self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+                self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+                self.setStyleSheet("background-color: #27273d;")
+            elif self.settings.value("Theme") == "Light":
+                self.output.setStyleSheet("background: transparent; color: black; font-size: 15px")
+                self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: black; background-color: #1b1b29;")
+                self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
+                self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
+                self.setStyleSheet("background-color: white;")
+        except:
             self.output.setStyleSheet("background: transparent; color: white; font-size: 15px")
             self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: white; background-color: #1b1b29;")
             self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
             self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
             self.setStyleSheet("background-color: #27273d;")
-        elif self.settings.value("Theme") == "Light":
-            self.output.setStyleSheet("background: transparent; color: black; font-size: 15px")
-            self.msgbox.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; padding: 5px; color: black; background-color: #1b1b29;")
-            self.send.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
-            self.settingsbutton.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: black; background-color: #1b1b29; padding: 0px;")
-            self.setStyleSheet("background-color: white;")
 
     def GPT(self):
         self.output.setText("Thinking...")
@@ -184,13 +195,13 @@ class window(QWidget):
         )
 
         response.stream_to_file(speech_file_path) # Stream the audio to "speech.mp3"
-        audio = MP3(r"speech.mp3") # Pass the path of "speech.mp3" through mutagen
-        mixer.music.load(r'speech.mp3') # Pass the path of "speech.mp3" through pygame mixer
+        audio = MP3(f"{os.getcwd()}/speech.mp3") # Pass the path of "speech.mp3" through mutagen
+        mixer.music.load(f"{os.getcwd()}/speech.mp3") # Pass the path of "speech.mp3" through pygame mixer
         mixer.music.play() # play "speech.mp3"
         time.sleep(audio.info.length) # sleep for however long "speech.mp3" is
-        mixer.music.load(r"empty.mp3") # load a small beep sound into pygame mixer
+        mixer.music.load(f"{os.getcwd()}/speech.mp3") # load a small beep sound into pygame mixer
         mixer.music.play() # play the beep sound to avoid an "access denied" error
-        os.remove(r'speech.mp3') # Remove "speech.mp3" to avoid an "access denied" error
+        os.remove(f"{os.getcwd()}/speech.mp3") # Remove "speech.mp3" to avoid an "access denied" error
 
 class settings(QDialog):
     def __init__(self, parent=None):
@@ -204,16 +215,20 @@ class settings(QDialog):
         self.themedark = QPushButton("Dark Mode")
         self.voicemale = QPushButton("Male")
         self.voicefemale = QPushButton("Female")
+        self.keysave = QPushButton("Set Key")
+        self.key = QLineEdit()
 
         self.themelight.clicked.connect(self.lightmode)
         self.themedark.clicked.connect(self.darkmode)
         self.voicemale.clicked.connect(self.malevoice)
         self.voicefemale.clicked.connect(self.femalevoice)
+        self.keysave.clicked.connect(self.setapikey)
 
         self.themelight.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.themedark.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.voicemale.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
         self.voicefemale.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
+        self.keysave.setStyleSheet("border-width: 5px; border-radius: 10px; border-color: #11111a; color: white; background-color: #1b1b29; padding: 0px;")
 
         self.setStyleSheet("color: white; background-color: #27273d")
 
@@ -225,21 +240,29 @@ class settings(QDialog):
         self.voicemale.setMinimumSize(70, 50)
         self.voicefemale.setMaximumSize(70, 50)
         self.voicefemale.setMinimumSize(70, 50)
+        self.keysave.setMaximumSize(70, 30)
+        self.keysave.setMinimumSize(70, 30)
 
         self.titlethemes = QLabel("Themes")
         self.titlevoices = QLabel("AI Voices")
+        self.titlekey = QLabel("OpenAI API Key")
 
         self.layout = QVBoxLayout()
         self.theme = QHBoxLayout()
         self.voices = QHBoxLayout()
+        self.apikey = QHBoxLayout()
         self.theme.addWidget(self.themelight)
         self.theme.addWidget(self.themedark)
         self.voices.addWidget(self.voicemale)
         self.voices.addWidget(self.voicefemale)
+        self.apikey.addWidget(self.key)
+        self.apikey.addWidget(self.keysave)
         self.layout.addWidget(self.titlethemes)
         self.layout.addLayout(self.theme)
         self.layout.addWidget(self.titlevoices)
         self.layout.addLayout(self.voices)
+        self.layout.addWidget(self.titlekey)
+        self.layout.addLayout(self.apikey)
         self.setLayout(self.layout)
 
     def lightmode(self):
@@ -256,6 +279,8 @@ class settings(QDialog):
     def femalevoice(self):
         self.settings.setValue("Voice", "Female")
         self.hide()
+    def setapikey(self):
+        self.settings.setValue("key", self.key.text())
 
 def main():
     app = QApplication(sys.argv)
