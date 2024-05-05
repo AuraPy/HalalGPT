@@ -23,7 +23,7 @@ class window(QWidget):
         super(window, self).__init__(parent)
         self.settings = QSettings("AuraPy", "HalalGPT")
         self.setWindowIcon(QIcon(f"{os.getcwd()}/logo.svg"))
-        self.resize(500, 900)
+        self.resize(500, 500)
         self.output = QTextBrowser()
         self.settingsbutton = QPushButton()
         self.layout = QVBoxLayout()
@@ -57,7 +57,7 @@ class window(QWidget):
         if self.settings.value("key"):
             self.client = OpenAI(api_key=self.settings.value("key")) # Set the openai client and set the token
         else:
-            print("Reverted back to environment variable for api key, will throw error if not provided.")
+            print("Reverted back to environment variable for API key, will throw error if not provided.")
             self.client = OpenAI(api_key=OPENAI_TOKEN)
 
         # array of voices for HalalGPT
@@ -200,7 +200,6 @@ class window(QWidget):
         mixer.music.play() # play "speech.mp3"
         time.sleep(audio.info.length) # sleep for however long "speech.mp3" is
         mixer.music.load(f"{os.getcwd()}/empty.mp3") # load a small beep sound into pygame mixer
-        mixer.music.play() # play the beep sound to avoid an "access denied" error
         os.remove(f"{os.getcwd()}/speech.mp3") # Remove "speech.mp3" to avoid an "access denied" error
 
 class settings(QDialog):
